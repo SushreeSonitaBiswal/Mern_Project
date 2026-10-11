@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run backend\" \"npm run frontend\"",
     "start": "npm run dev",
-    "backend": "cd backend && mvnw.cmd spring-boot:run",
+    "backend": "cd backend && set \"JAVA_HOME=C:\\Program Files\\Java\\jdk-21\" && mvnw.cmd spring-boot:run",
     "frontend": "cd frontend && npm run dev",
     "install:all": "npm install && cd frontend && npm install",
     "build:frontend": "cd frontend && npm run build"
