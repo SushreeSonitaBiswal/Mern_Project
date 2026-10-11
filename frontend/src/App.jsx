@@ -89,6 +89,7 @@ function App() {
                 }
               >
                 <Route index element={<AdminDashboard />} />
+                <Route path="home" element={<AdminDashboard />} />
                 <Route path="doctors" element={<ManageDoctors />} />
                 <Route path="patients" element={<ManagePatients />} />
                 <Route path="departments" element={<ManageDepartments />} />

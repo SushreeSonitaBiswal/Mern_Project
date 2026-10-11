@@ -28,9 +28,17 @@ export const patientService = {
   updateProfile: (id, data) => api.put(`/patients/${id}`, data),
 };
 
+export const authService = {
+  login: (data) => api.post('/auth/login', data),
+  registerPatient: (data) => api.post('/auth/register', data),
+  registerDoctor: (data) => api.post('/auth/register-doctor', data),
+};
+
 export const adminService = {
+  getHome: () => api.get('/admin/home'),
   getStats: () => api.get('/admin/stats'),
   getAllDoctors: () => api.get('/admin/doctors'),
+  createDoctor: (data) => api.post('/admin/doctors', data),
   updateDoctorStatus: (id, status) => api.patch(`/admin/doctors/${id}/status?status=${status}`),
   getAllAppointments: () => api.get('/admin/appointments'),
   createDepartment: (data) => api.post('/admin/departments', data),

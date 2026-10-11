@@ -3,6 +3,7 @@ package com.careconnect.service;
 import com.careconnect.dto.request.LoginRequest;
 import com.careconnect.dto.request.RegisterRequest;
 import com.careconnect.dto.response.AuthResponse;
+import com.careconnect.entity.Doctor;
 import com.careconnect.entity.Patient;
 import com.careconnect.entity.Role;
 import com.careconnect.entity.User;
@@ -63,6 +64,43 @@ public class AuthService {
                 .role(user.getRole().name())
                 .profileId(patient.getId())
                 .build();
+    }
+
+    @Transactional
+    public Doctor registerDoctor(com.careconnect.dto.request.DoctorRegisterRequest request, com.careconnect.entity.DoctorStatus initialStatus) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+
+        User user = User.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.ROLE_DOCTOR)
+                .enabled(true)
+                .build();
+        user = userRepository.save(user);
+
+        com.careconnect.entity.Department dept = null;
+        if (request.getDepartmentId() != null) {
+            dept = doctorRepository.findById(request.getDepartmentId())
+                    .map(Doctor::getDepartment)
+                    .orElse(null);
+        }
+
+        Doctor doctor = Doctor.builder()
+                .user(user)
+                .name(request.getName())
+                .phone(request.getPhone())
+                .specialization(request.getSpecialization())
+                .qualification(request.getQualification())
+                .experienceYears(request.getExperienceYears() != null ? request.getExperienceYears() : 1)
+                .consultationFee(request.getConsultationFee() != null ? request.getConsultationFee() : java.math.BigDecimal.valueOf(500))
+                .bio(request.getBio())
+                .department(dept)
+                .status(initialStatus != null ? initialStatus : com.careconnect.entity.DoctorStatus.PENDING)
+                .build();
+
+        return doctorRepository.save(doctor);
     }
 
     public AuthResponse login(LoginRequest request) {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Activity, Mail, Lock, AlertCircle, ArrowRight, ShieldCheck, Stethoscope, User } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,11 +10,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const handleQuickLogin = (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,39 +44,6 @@ const Login = () => {
           />
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Sign in to CareConnect</h2>
           <p className="mt-1 text-xs text-slate-500">Access role-specific healthcare management workspaces</p>
-        </div>
-
-        {/* Demo Fast Login Buttons */}
-        <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block text-center">
-            Quick One-Click Demo Logins:
-          </span>
-          <div className="grid grid-cols-3 gap-1.5 pt-1">
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('rahul.sharma@careconnect.com', 'Patient@123')}
-              className="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-semibold border border-emerald-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-            >
-              <User className="w-3 h-3" />
-              Patient
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('raj.kumar@careconnect.com', 'Doctor@123')}
-              className="px-2 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-[11px] font-semibold border border-teal-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-            >
-              <Stethoscope className="w-3 h-3" />
-              Doctor
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@careconnect.com', 'Admin@123')}
-              className="px-2 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-800 text-[11px] font-semibold border border-purple-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-            >
-              <ShieldCheck className="w-3 h-3" />
-              Admin
-            </button>
-          </div>
         </div>
 
         {error && (

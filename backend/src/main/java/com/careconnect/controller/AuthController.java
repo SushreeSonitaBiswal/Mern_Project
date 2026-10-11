@@ -23,6 +23,17 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Registration successful", response));
     }
 
+    @PostMapping("/register-doctor")
+    public ResponseEntity<ApiResponse<com.careconnect.entity.Doctor>> registerDoctor(
+            @Valid @RequestBody com.careconnect.dto.request.DoctorRegisterRequest request
+    ) {
+        com.careconnect.entity.Doctor doctor = authService.registerDoctor(request, com.careconnect.entity.DoctorStatus.PENDING);
+        return ResponseEntity.ok(ApiResponse.success(
+                "Doctor application submitted successfully! Your account will be reviewed and approved by the hospital administrator.",
+                doctor
+        ));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);

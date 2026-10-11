@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Sparkles, 
-  Clock, 
-  ChevronRight, 
-  CheckCircle2, 
-  Loader2 
+import {
+  Search,
+  Sparkles,
+  Clock,
+  ChevronRight,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { doctorService, departmentService, appointmentService } from '../../services';
 import StarRating from '../../components/common/StarRating';
@@ -129,14 +129,11 @@ const FindDoctors = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        
+
         {/* Banner */}
         <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 rounded-3xl p-6 sm:p-10 text-white shadow-xl shadow-emerald-900/10">
           <div className="max-w-2xl space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md">
-              <Sparkles className="w-3.5 h-3.5" />
-              Live Clinical Specialists
-            </span>
+
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
               Find & Book Verified Doctors
             </h1>
@@ -317,13 +314,12 @@ const FindDoctors = () => {
                       type="button"
                       disabled={!slot.available}
                       onClick={() => setSelectedTime(slot.time)}
-                      className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
-                        !slot.available
+                      className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${!slot.available
                           ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed line-through'
                           : selectedTime === slot.time
-                          ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500'
-                      }`}
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500'
+                        }`}
                     >
                       {slot.formattedTime || slot.time}
                     </button>
