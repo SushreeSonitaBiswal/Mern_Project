@@ -10,10 +10,6 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-semibold tracking-wide">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Next-Gen Healthcare Management
-              </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight">
                 Connect with Expert Doctors, <span className="text-emerald-600">Instantly.</span>
               </h1>
