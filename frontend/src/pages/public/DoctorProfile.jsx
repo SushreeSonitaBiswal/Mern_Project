@@ -1,83 +1,120 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { INITIAL_DOCTORS } from '../../services/mockData';
+import { doctorService, appointmentService } from '../../services';
 import StarRating from '../../components/common/StarRating';
 import Modal from '../../components/common/Modal';
 import { useAuth } from '../../context/AuthContext';
 import { 
-  Stethoscope, 
-  Award, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  Mail, 
   Calendar, 
+  Clock, 
+  Phone, 
+  ChevronLeft, 
   CheckCircle2, 
-  Star, 
-  ChevronLeft,
-  DollarSign
+  Loader2 
 } from 'lucide-react';
 
 const DoctorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  
-  const doctor = INITIAL_DOCTORS.find((d) => d.id === Number(id)) || INITIAL_DOCTORS[0];
+
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('2026-10-15');
-  const [selectedTime, setSelectedTime] = useState('10:00 AM');
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [selectedTime, setSelectedTime] = useState('09:00:00');
   const [symptoms, setSymptoms] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const timeSlots = [
-    { time: '09:00 AM', available: true },
-    { time: '09:30 AM', available: false },
-    { time: '10:00 AM', available: true },
-    { time: '10:30 AM', available: true },
-    { time: '11:00 AM', available: true },
-    { time: '04:00 PM', available: true },
-    { time: '04:30 PM', available: true },
-  ];
+  useEffect(() => {
+    const fetchDoc = async () => {
+      setLoading(true);
+      try {
+        const res = await doctorService.getDoctorById(id);
+        if (res?.data) setDoctor(res.data);
+      } catch (err) {
+        console.error('Failed to fetch doctor:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDoc();
+  }, [id]);
 
-  const handleConfirmBooking = (e) => {
+  useEffect(() => {
+    if (doctor && selectedDate) {
+      const fetchSlots = async () => {
+        try {
+          const res = await doctorService.getAvailableSlots(doctor.id, selectedDate);
+          if (res?.data) {
+            setAvailableSlots(res.data);
+            const first = res.data.find(s => s.available);
+            if (first) setSelectedTime(first.time);
+          }
+        } catch (err) {
+          console.error('Failed to fetch slots:', err);
+        }
+      };
+      fetchSlots();
+    }
+  }, [doctor, selectedDate]);
+
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
-    const saved = JSON.parse(localStorage.getItem('careconnect_appointments') || '[]');
-    const newAppointment = {
-      id: Date.now(),
-      patientId: user.profileId || 1,
-      patientName: user.name || 'Rahul Sharma',
-      patientEmail: user.email,
-      doctorId: doctor.id,
-      doctorName: doctor.name,
-      doctorSpecialization: doctor.specialization,
-      appointmentDate: selectedDate,
-      appointmentTime: selectedTime,
-      status: 'CONFIRMED',
-      symptoms: symptoms || 'General Medical Consultation',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    localStorage.setItem('careconnect_appointments', JSON.stringify([newAppointment, ...saved]));
+    try {
+      setErrorMsg('');
+      await appointmentService.bookAppointment({
+        doctorId: doctor.id,
+        appointmentDate: selectedDate,
+        appointmentTime: selectedTime,
+        symptoms: symptoms || 'General Clinical Consultation'
+      });
 
-    setBookingSuccess(true);
-    setTimeout(() => {
-      setBookingModalOpen(false);
-      setBookingSuccess(false);
-      navigate('/patient/appointments');
-    }, 1800);
+      setBookingSuccess(true);
+      setTimeout(() => {
+        setBookingModalOpen(false);
+        setBookingSuccess(false);
+        navigate('/patient/appointments');
+      }, 1800);
+    } catch (err) {
+      setErrorMsg(err?.message || 'Failed to reserve appointment slot.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-slate-400 gap-2">
+        <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+        <span className="text-sm">Loading doctor profile...</span>
+      </div>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <div className="text-center py-20 text-slate-500">
+        Doctor not found.{' '}
+        <Link to="/doctors" className="text-emerald-600 underline">Browse doctors</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-6">
         
-        {/* Back navigation */}
         <Link 
           to="/doctors"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-600 transition-colors"
@@ -89,24 +126,22 @@ const DoctorProfile = () => {
         {/* Doctor Header Banner Card */}
         <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row gap-6 md:items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-            <img
-              src={doctor.image}
-              alt={doctor.name}
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl object-cover ring-4 ring-emerald-50 shadow-md shrink-0"
-            />
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-3xl shadow-sm shrink-0">
+              {doctor.name.replace('Dr. ', '')[0]}
+            </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  {doctor.department}
+                  {doctor.department?.name || doctor.specialization}
                 </span>
-                <span className="text-xs font-semibold text-slate-400">• {doctor.experienceYears} Years Experience</span>
+                <span className="text-xs font-semibold text-slate-400">• {doctor.experienceYears || 5} Years Experience</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 {doctor.name}
               </h1>
               <p className="text-xs sm:text-sm text-slate-500">{doctor.qualification}</p>
               <div className="flex items-center gap-3 pt-1">
-                <StarRating rating={doctor.averageRating} totalReviews={doctor.totalReviews} size="md" />
+                <StarRating rating={doctor.averageRating || 5.0} totalReviews={doctor.totalReviews || 10} size="md" />
               </div>
             </div>
           </div>
@@ -125,71 +160,38 @@ const DoctorProfile = () => {
           </div>
         </div>
 
-        {/* Doctor Details Grid */}
+        {/* Doctor Details */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          {/* Left Column: About & Qualifications */}
           <div className="md:col-span-2 space-y-6">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-3">
               <h2 className="text-base font-bold text-slate-900">Biography & Background</h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{doctor.bio}</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-4">
-              <h2 className="text-base font-bold text-slate-900">Patient Testimonials & Reviews</h2>
-              <div className="space-y-3 divide-y divide-slate-100 text-xs">
-                <div className="pt-3 first:pt-0 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-800">Amit Sen</span>
-                    <StarRating rating={5} />
-                  </div>
-                  <p className="text-slate-500">
-                    "Dr. {doctor.name} was extremely thorough, explained my diagnosis with patience, and prescribed medication that helped within two days."
-                  </p>
-                </div>
-                <div className="pt-3 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-800">Neha Verma</span>
-                    <StarRating rating={4.8} />
-                  </div>
-                  <p className="text-slate-500">
-                    "Very professional approach and great bedside manners. Clinic waiting time was minimal."
-                  </p>
-                </div>
-              </div>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {doctor.bio || 'Clinical healthcare provider focused on advanced diagnosis, preventive treatments, and patient recovery.'}
+              </p>
             </div>
           </div>
 
-          {/* Right Column: Schedule & Clinic Info */}
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-4 text-xs">
-              <h3 className="font-bold text-slate-900 text-sm">Consultation Timings</h3>
+              <h3 className="font-bold text-slate-900 text-sm">Consultation Information</h3>
               <div className="space-y-3 text-slate-600">
                 <div className="flex items-start gap-2.5">
                   <Calendar className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-800 block">Available Days</span>
-                    <span>{doctor.availableDays?.join(', ')}</span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <Clock className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold text-slate-800 block">Clinic Hours</span>
-                    <span>{doctor.timings}</span>
+                    <span className="font-bold text-slate-800 block">Department</span>
+                    <span>{doctor.department?.name || 'General Healthcare'}</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <Phone className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-800 block">Contact Desk</span>
-                    <span>{doctor.phone}</span>
+                    <span className="font-bold text-slate-800 block">Phone Desk</span>
+                    <span>{doctor.phone || 'Hospital Reception Desk'}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
 
       </div>
@@ -207,11 +209,17 @@ const DoctorProfile = () => {
             </div>
             <h3 className="text-lg font-bold text-slate-900">Appointment Booked!</h3>
             <p className="text-xs text-slate-500">
-              Your consultation on <strong>{selectedDate}</strong> at <strong>{selectedTime}</strong> has been logged.
+              Your consultation on <strong>{selectedDate}</strong> at <strong>{selectedTime}</strong> has been logged to the database.
             </p>
           </div>
         ) : (
           <form onSubmit={handleConfirmBooking} className="space-y-4 text-xs">
+            {errorMsg && (
+              <div className="p-3 bg-rose-50 text-rose-700 rounded-xl border border-rose-200">
+                {errorMsg}
+              </div>
+            )}
+
             <div>
               <label className="block text-[11px] font-semibold uppercase text-slate-500 mb-1">Select Date</label>
               <input
@@ -224,33 +232,39 @@ const DoctorProfile = () => {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold uppercase text-slate-500 mb-1">Select Time Slot</label>
-              <div className="grid grid-cols-3 gap-2">
-                {timeSlots.map((s) => (
-                  <button
-                    key={s.time}
-                    type="button"
-                    disabled={!s.available}
-                    onClick={() => setSelectedTime(s.time)}
-                    className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
-                      !s.available
-                        ? 'bg-slate-100 border-slate-200 text-slate-400 line-through cursor-not-allowed'
-                        : selectedTime === s.time
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500'
-                    }`}
-                  >
-                    {s.time}
-                  </button>
-                ))}
-              </div>
+              <label className="block text-[11px] font-semibold uppercase text-slate-500 mb-1">Available Slots</label>
+              {availableSlots.length === 0 ? (
+                <div className="p-3 bg-amber-50 text-amber-700 rounded-xl text-center">
+                  No slots available on this date.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {availableSlots.map((s) => (
+                    <button
+                      key={s.time}
+                      type="button"
+                      disabled={!s.available}
+                      onClick={() => setSelectedTime(s.time)}
+                      className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                        !s.available
+                          ? 'bg-slate-100 border-slate-200 text-slate-400 line-through cursor-not-allowed'
+                          : selectedTime === s.time
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500'
+                      }`}
+                    >
+                      {s.formattedTime || s.time}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
               <label className="block text-[11px] font-semibold uppercase text-slate-500 mb-1">Symptoms / Reason</label>
               <textarea
                 rows="2"
-                placeholder="Describe your health issue..."
+                placeholder="Describe your symptoms..."
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
@@ -267,7 +281,8 @@ const DoctorProfile = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                disabled={availableSlots.length === 0}
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50"
               >
                 Confirm Appointment
               </button>

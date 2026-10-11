@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
-  Filter, 
-  MapPin, 
+  Sparkles, 
   Clock, 
-  Award, 
-  Star, 
-  Calendar, 
-  DollarSign, 
-  ChevronRight,
-  Sparkles,
-  CheckCircle2
+  ChevronRight, 
+  CheckCircle2, 
+  Loader2 
 } from 'lucide-react';
-import { INITIAL_DOCTORS, INITIAL_DEPARTMENTS } from '../../services/mockData';
+import { doctorService, departmentService, appointmentService } from '../../services';
 import StarRating from '../../components/common/StarRating';
 import Modal from '../../components/common/Modal';
 import { useAuth } from '../../context/AuthContext';
@@ -22,141 +17,167 @@ const FindDoctors = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  const [doctors, setDoctors] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
   const [maxFee, setMaxFee] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  
+
   // Booking modal state
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('2026-10-15');
-  const [selectedTime, setSelectedTime] = useState('10:00 AM');
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedTime, setSelectedTime] = useState('09:00:00');
   const [symptoms, setSymptoms] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState('');
 
-  // Available time slots generator for selected doctor
-  const timeSlots = [
-    { time: '09:00 AM', available: true },
-    { time: '09:30 AM', available: false },
-    { time: '10:00 AM', available: true },
-    { time: '10:30 AM', available: true },
-    { time: '11:00 AM', available: false },
-    { time: '11:30 AM', available: true },
-    { time: '04:00 PM', available: true },
-    { time: '04:30 PM', available: true },
-    { time: '05:00 PM', available: true },
-  ];
+  // Fetch real doctors and departments from Backend API
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [docRes, deptRes] = await Promise.all([
+          doctorService.getAllDoctors(),
+          departmentService.getAllDepartments()
+        ]);
+        if (docRes?.data) setDoctors(docRes.data);
+        if (deptRes?.data) setDepartments(deptRes.data);
+      } catch (err) {
+        console.error('Failed to fetch doctors/departments from API:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
-  // Filtering doctors
-  const filteredDoctors = INITIAL_DOCTORS.filter((doc) => {
-    if (doc.status !== 'APPROVED') return false;
-    const matchesQuery = 
-      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.specialization.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDept = selectedDept === 'ALL' || doc.department === selectedDept;
-    const matchesFee = !maxFee || doc.consultationFee <= Number(maxFee);
-    return matchesQuery && matchesDept && matchesFee;
-  });
+  // Fetch dynamic available slots when doctor or date changes
+  useEffect(() => {
+    if (selectedDoctor && selectedDate) {
+      const fetchSlots = async () => {
+        setLoadingSlots(true);
+        try {
+          const res = await doctorService.getAvailableSlots(selectedDoctor.id, selectedDate);
+          if (res?.data) {
+            setAvailableSlots(res.data);
+            const firstAvail = res.data.find(s => s.available);
+            if (firstAvail) setSelectedTime(firstAvail.time);
+          }
+        } catch (err) {
+          console.error('Failed to fetch slots:', err);
+        } finally {
+          setLoadingSlots(false);
+        }
+      };
+      fetchSlots();
+    }
+  }, [selectedDoctor, selectedDate]);
 
   const handleOpenBooking = (doctor) => {
     setSelectedDoctor(doctor);
     setBookingSuccess(false);
+    setBookingError('');
     setBookingModalOpen(true);
   };
 
-  const handleConfirmBooking = (e) => {
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
-    // Save appointment to localStorage mock state
-    const savedAppts = JSON.parse(localStorage.getItem('careconnect_appointments') || '[]');
-    const newAppointment = {
-      id: Date.now(),
-      patientId: user.profileId || 1,
-      patientName: user.name || 'Current User',
-      patientEmail: user.email,
-      doctorId: selectedDoctor.id,
-      doctorName: selectedDoctor.name,
-      doctorSpecialization: selectedDoctor.specialization,
-      appointmentDate: selectedDate,
-      appointmentTime: selectedTime,
-      status: 'CONFIRMED',
-      symptoms: symptoms || 'General Medical Consultation',
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    localStorage.setItem('careconnect_appointments', JSON.stringify([newAppointment, ...savedAppts]));
+    try {
+      setBookingError('');
+      await appointmentService.bookAppointment({
+        doctorId: selectedDoctor.id,
+        appointmentDate: selectedDate,
+        appointmentTime: selectedTime,
+        symptoms: symptoms || 'General Clinical Consultation'
+      });
 
-    setBookingSuccess(true);
-    setTimeout(() => {
-      setBookingModalOpen(false);
-      setBookingSuccess(false);
-      setSymptoms('');
-      navigate('/patient');
-    }, 1800);
+      setBookingSuccess(true);
+      setTimeout(() => {
+        setBookingModalOpen(false);
+        setBookingSuccess(false);
+        setSymptoms('');
+        navigate('/patient/appointments');
+      }, 1800);
+    } catch (err) {
+      setBookingError(err?.message || 'Failed to book slot. It might be already taken.');
+    }
   };
+
+  const filteredDoctors = doctors.filter((doc) => {
+    const matchesQuery =
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (doc.specialization && doc.specialization.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesDept = selectedDept === 'ALL' || (doc.department && doc.department.name === selectedDept);
+    const matchesFee = !maxFee || doc.consultationFee <= Number(maxFee);
+    return matchesQuery && matchesDept && matchesFee;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Banner */}
-        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 rounded-3xl p-6 sm:p-10 text-white shadow-xl shadow-emerald-900/10 relative overflow-hidden">
-          <div className="relative z-10 max-w-2xl space-y-3">
+        {/* Banner */}
+        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 rounded-3xl p-6 sm:p-10 text-white shadow-xl shadow-emerald-900/10">
+          <div className="max-w-2xl space-y-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5" />
-              Verified Clinical Specialists
+              Live Clinical Specialists
             </span>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Find & Book Top Doctors
+              Find & Book Verified Doctors
             </h1>
             <p className="text-emerald-100 text-sm sm:text-base leading-relaxed">
-              Browse certified doctors, check real-time availability slots, compare consultation fees, and schedule visits seamlessly.
+              Real-time schedule consultation slots, compare rates, and book appointments backed by Supabase PostgreSQL.
             </p>
           </div>
-          <div className="absolute right-0 top-0 bottom-0 opacity-10 pointer-events-none w-1/2 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white to-transparent" />
         </div>
 
-        {/* Search & Filter Bar */}
+        {/* Filters */}
         <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4">
-            
-            {/* Search Input */}
             <div className="md:col-span-6 relative">
               <Search className="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by doctor name or condition (e.g. Cardiologist)..."
+                placeholder="Search doctors by name or medical specialty..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
               />
             </div>
 
-            {/* Department Filter */}
             <div className="md:col-span-3">
               <select
                 value={selectedDept}
                 onChange={(e) => setSelectedDept(e.target.value)}
-                className="w-full py-3 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                className="w-full py-3 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:ring-2 focus:ring-emerald-500/20"
               >
                 <option value="ALL">All Departments</option>
-                {INITIAL_DEPARTMENTS.map((dept) => (
-                  <option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.name}>{dept.name}</option>
                 ))}
               </select>
             </div>
 
-            {/* Fee Filter */}
             <div className="md:col-span-3">
               <select
                 value={maxFee}
                 onChange={(e) => setMaxFee(e.target.value)}
-                className="w-full py-3 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                className="w-full py-3 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:ring-2 focus:ring-emerald-500/20"
               >
                 <option value="">Any Consultation Fee</option>
                 <option value="600">Up to ₹600</option>
@@ -165,134 +186,80 @@ const FindDoctors = () => {
               </select>
             </div>
           </div>
+        </div>
 
-          {/* Quick Department Tags (Scrollable on Mobile) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs">
-            <span className="text-slate-400 font-semibold uppercase tracking-wider text-[11px] whitespace-nowrap">
-              Quick Filter:
-            </span>
-            <button
-              onClick={() => setSelectedDept('ALL')}
-              className={`px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap cursor-pointer ${
-                selectedDept === 'ALL'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              All Specialties
-            </button>
-            {INITIAL_DEPARTMENTS.map((dept) => (
-              <button
-                key={dept.id}
-                onClick={() => setSelectedDept(dept.name)}
-                className={`px-3 py-1.5 rounded-full font-medium transition-all whitespace-nowrap cursor-pointer ${
-                  selectedDept === dept.name
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+        {/* Doctors Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-slate-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+            <span className="text-sm font-medium">Loading verified doctors...</span>
+          </div>
+        ) : filteredDoctors.length === 0 ? (
+          <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 space-y-3">
+            <Search className="w-8 h-8 mx-auto text-slate-300" />
+            <h3 className="text-base font-bold text-slate-800">No doctors match your search</h3>
+            <p className="text-sm text-slate-500">Try adjusting your filters or search terms.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDoctors.map((doctor) => (
+              <div
+                key={doctor.id}
+                className="bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-emerald-200"
               >
-                {dept.name}
-              </button>
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-extrabold text-xl shrink-0">
+                      {doctor.name.replace('Dr. ', '')[0]}
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <span className="inline-block text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">
+                        {doctor.department?.name || doctor.specialization}
+                      </span>
+                      <h3 className="font-bold text-base text-slate-900 truncate">
+                        {doctor.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 truncate">
+                        {doctor.qualification}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <StarRating rating={doctor.averageRating || 5.0} totalReviews={doctor.totalReviews || 10} />
+                    <span className="font-medium text-slate-600 bg-slate-50 px-2 py-1 rounded-md">
+                      {doctor.experienceYears || 5} yrs exp
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    {doctor.bio || 'Certified specialist providing patient-centered care and modern medical consultations.'}
+                  </p>
+                </div>
+
+                <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-[11px] text-slate-400 block font-medium">Consultation Fee</span>
+                    <span className="text-base font-extrabold text-slate-900">
+                      ₹{doctor.consultationFee}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleOpenBooking(doctor)}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all hover:scale-105 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Book Slot</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Doctor List Results */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-sm text-slate-500">
-            <span>Showing <strong className="text-slate-800">{filteredDoctors.length}</strong> verified doctors</span>
-            {(searchQuery || selectedDept !== 'ALL' || maxFee) && (
-              <button 
-                onClick={() => { setSearchQuery(''); setSelectedDept('ALL'); setMaxFee(''); }}
-                className="text-emerald-600 hover:underline font-medium text-xs cursor-pointer"
-              >
-                Reset Filters
-              </button>
-            )}
-          </div>
-
-          {filteredDoctors.length === 0 ? (
-            <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 space-y-3">
-              <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
-                <Search className="w-7 h-7" />
-              </div>
-              <h3 className="text-base font-bold text-slate-800">No doctors found</h3>
-              <p className="text-sm text-slate-500 max-w-sm mx-auto">
-                Try adjusting your search criteria or clearing selected department filters.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDoctors.map((doctor) => (
-                <div
-                  key={doctor.id}
-                  className="bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group hover:border-emerald-200"
-                >
-                  <div className="p-6 space-y-4">
-                    {/* Header info with Avatar */}
-                    <div className="flex items-start gap-4">
-                      <img
-                        src={doctor.image}
-                        alt={doctor.name}
-                        className="w-16 h-16 rounded-2xl object-cover ring-2 ring-emerald-500/10 group-hover:scale-105 transition-transform"
-                      />
-                      <div className="space-y-1 min-w-0">
-                        <span className="inline-block text-[11px] font-semibold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">
-                          {doctor.department}
-                        </span>
-                        <h3 className="font-bold text-base text-slate-900 truncate">
-                          {doctor.name}
-                        </h3>
-                        <p className="text-xs text-slate-500 truncate">
-                          {doctor.qualification}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Star Rating and Experience */}
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-                      <StarRating rating={doctor.averageRating} totalReviews={doctor.totalReviews} />
-                      <span className="font-medium text-slate-600 bg-slate-50 px-2 py-1 rounded-md">
-                        {doctor.experienceYears} yrs exp
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                      {doctor.bio}
-                    </p>
-
-                    <div className="space-y-1.5 text-xs text-slate-500">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{doctor.timings}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card Footer: Fee & Book Button */}
-                  <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="text-[11px] text-slate-400 block font-medium">Consultation Fee</span>
-                      <span className="text-base font-extrabold text-slate-900">
-                        ₹{doctor.consultationFee}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => handleOpenBooking(doctor)}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-all hover:scale-105 cursor-pointer flex items-center gap-1.5"
-                    >
-                      <span>Book Slot</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Appointment Booking Modal */}
+      {/* Booking Modal */}
       <Modal
         isOpen={bookingModalOpen}
         onClose={() => setBookingModalOpen(false)}
@@ -305,94 +272,91 @@ const FindDoctors = () => {
             </div>
             <h3 className="text-xl font-bold text-slate-900">Appointment Confirmed!</h3>
             <p className="text-sm text-slate-500 max-w-sm mx-auto">
-              Your appointment with <strong>{selectedDoctor?.name}</strong> on <strong>{selectedDate}</strong> at <strong>{selectedTime}</strong> has been scheduled.
+              Your appointment with <strong>{selectedDoctor?.name}</strong> on <strong>{selectedDate}</strong> at <strong>{selectedTime}</strong> is scheduled in Supabase.
             </p>
             <div className="text-xs text-emerald-600 font-medium">
-              Redirecting to your Patient Dashboard...
+              Redirecting to your Appointments Workspace...
             </div>
           </div>
         ) : (
-          <form onSubmit={handleConfirmBooking} className="space-y-5">
-            {selectedDoctor && (
-              <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-100 flex items-center justify-between text-xs">
-                <div>
-                  <span className="font-bold text-slate-900 block">{selectedDoctor.specialization}</span>
-                  <span className="text-slate-500">{selectedDoctor.qualification}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-slate-400 block font-medium">Fee</span>
-                  <span className="font-extrabold text-slate-800 text-sm">₹{selectedDoctor.consultationFee}</span>
-                </div>
+          <form onSubmit={handleConfirmBooking} className="space-y-4">
+            {bookingError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl">
+                {bookingError}
               </div>
             )}
 
-            {/* Date Selection */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
                 Select Date
               </label>
               <input
                 type="date"
-                min="2026-10-11"
+                required
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-                required
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
               />
             </div>
 
-            {/* Time Slots Picker */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                Available Time Slots (30 Min)
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Available Time Slots (Calculated Dynamically from DB)
               </label>
-              <div className="grid grid-cols-3 gap-2">
-                {timeSlots.map((slot) => (
-                  <button
-                    key={slot.time}
-                    type="button"
-                    disabled={!slot.available}
-                    onClick={() => setSelectedTime(slot.time)}
-                    className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
-                      !slot.available
-                        ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed line-through'
-                        : selectedTime === slot.time
-                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500 hover:bg-emerald-50/50'
-                    }`}
-                  >
-                    {slot.time}
-                  </button>
-                ))}
-              </div>
+              {loadingSlots ? (
+                <div className="py-4 text-center text-xs text-slate-400">Loading open slots...</div>
+              ) : availableSlots.length === 0 ? (
+                <div className="py-4 text-center text-xs text-amber-600 bg-amber-50 rounded-xl p-3">
+                  No clinic slots open on this date. Please choose another weekday.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      disabled={!slot.available}
+                      onClick={() => setSelectedTime(slot.time)}
+                      className={`py-2 px-2 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                        !slot.available
+                          ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed line-through'
+                          : selectedTime === slot.time
+                          ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-500'
+                      }`}
+                    >
+                      {slot.formattedTime || slot.time}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Symptoms / Reason */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-                Chief Symptoms or Reason for Visit
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Chief Symptoms or Visit Purpose
               </label>
               <textarea
-                rows="3"
-                placeholder="Describe what you are experiencing (e.g. fever, headache, back pain)..."
+                rows="2"
+                placeholder="Describe your health symptoms..."
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
               />
             </div>
 
-            {/* Submit Action */}
-            <div className="pt-2 flex items-center justify-end gap-3">
+            <div className="pt-2 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setBookingModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all hover:scale-105"
+                disabled={availableSlots.length === 0}
+                className="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold disabled:opacity-50"
               >
                 Confirm Booking
               </button>

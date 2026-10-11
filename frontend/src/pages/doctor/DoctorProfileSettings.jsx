@@ -1,21 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Stethoscope, Mail, Phone, DollarSign, Award, Clock, Save, CheckCircle2 } from 'lucide-react';
+import { Stethoscope, Mail, Phone, DollarSign, Award, Clock, Save, CheckCircle2, Loader2 } from 'lucide-react';
+import { doctorService } from '../../services';
 
 const DoctorProfileSettings = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: user?.name || 'Dr. Raj Kumar',
-    email: user?.email || 'raj.kumar@careconnect.com',
-    phone: '+91 98765 43210',
-    specialization: 'Cardiologist',
-    department: 'Cardiology',
-    qualification: 'MBBS, MD (Cardiology)',
-    experienceYears: 12,
-    consultationFee: 800,
-    bio: 'Senior Consultant Cardiologist with 12+ years of experience in preventative cardiology, ECG analysis, coronary rehabilitation and clinical medicine.'
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+    specialization: '',
+    department: '',
+    qualification: '',
+    experienceYears: 0,
+    consultationFee: 500,
+    bio: ''
   });
+  const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [doctorId, setDoctorId] = useState(null);
+
+  useEffect(() => {
+    const fetchDocProfile = async () => {
+      setLoading(true);
+      try {
+        const res = await doctorService.getAllDoctors();
+        const list = res?.data || [];
+        const currentDoc = list.find(d => d.user?.email === user?.email || d.email === user?.email);
+        if (currentDoc) {
+          setDoctorId(currentDoc.id);
+          setProfile({
+            name: currentDoc.name || user?.name || '',
+            email: currentDoc.user?.email || currentDoc.email || user?.email || '',
+            phone: currentDoc.phone || '',
+            specialization: currentDoc.specialization || '',
+            department: currentDoc.department?.name || '',
+            qualification: currentDoc.qualification || '',
+            experienceYears: currentDoc.experienceYears || 0,
+            consultationFee: currentDoc.consultationFee || 500,
+            bio: currentDoc.bio || ''
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load doctor profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user?.email) fetchDocProfile();
+  }, [user]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,7 +72,13 @@ const DoctorProfileSettings = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-xs">
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
+            <span className="text-xs">Loading doctor settings...</span>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Doctor Name</label>
@@ -117,6 +156,7 @@ const DoctorProfileSettings = () => {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

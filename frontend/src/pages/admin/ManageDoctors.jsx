@@ -7,25 +7,43 @@ import {
   XCircle, 
   CheckCircle2, 
   Trash2, 
-  Filter 
+  Filter,
+  Loader2
 } from 'lucide-react';
-import { INITIAL_DOCTORS } from '../../services/mockData';
+import { adminService } from '../../services';
 import StatusBadge from '../../components/common/StatusBadge';
 
 const ManageDoctors = () => {
   const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
+  const fetchDoctors = async () => {
+    setLoading(true);
+    try {
+      const res = await adminService.getAllDoctors();
+      if (res?.data) {
+        setDoctors(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to load doctors:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('careconnect_doctors') || 'null');
-    setDoctors(saved || INITIAL_DOCTORS);
+    fetchDoctors();
   }, []);
 
-  const handleUpdateStatus = (id, newStatus) => {
-    const updated = doctors.map((d) => (d.id === id ? { ...d, status: newStatus } : d));
-    setDoctors(updated);
-    localStorage.setItem('careconnect_doctors', JSON.stringify(updated));
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      await adminService.updateDoctorStatus(id, newStatus);
+      fetchDoctors();
+    } catch (err) {
+      alert(err?.message || 'Failed to update doctor status');
+    }
   };
 
   const filtered = doctors.filter((d) => {
@@ -73,74 +91,85 @@ const ManageDoctors = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-100">
-              <tr>
-                <th className="px-6 py-3.5">Doctor Name</th>
-                <th className="px-6 py-3.5">Specialty</th>
-                <th className="px-6 py-3.5">Experience & Fee</th>
-                <th className="px-6 py-3.5">Status</th>
-                <th className="px-6 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
-              {filtered.map((doc) => (
-                <tr key={doc.id} className="hover:bg-slate-50/50">
-                  <td className="px-6 py-4 font-semibold text-slate-900">
-                    {doc.name}
-                    <span className="block text-[11px] font-normal text-slate-400">{doc.email}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-semibold text-slate-800">{doc.department}</span>
-                    <span className="block text-[11px] text-slate-400">{doc.qualification}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span>{doc.experienceYears} Years</span>
-                    <span className="block text-[11px] text-emerald-600 font-bold">₹{doc.consultationFee}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={doc.status} />
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    {doc.status === 'PENDING' && (
-                      <>
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+            <span className="text-xs">Loading medical practitioners...</span>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 text-slate-400 text-xs">
+            No doctors found matching current filters.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-3.5">Doctor Name</th>
+                  <th className="px-6 py-3.5">Specialty</th>
+                  <th className="px-6 py-3.5">Experience & Fee</th>
+                  <th className="px-6 py-3.5">Status</th>
+                  <th className="px-6 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {filtered.map((doc) => (
+                  <tr key={doc.id} className="hover:bg-slate-50/50">
+                    <td className="px-6 py-4 font-semibold text-slate-900">
+                      {doc.name}
+                      <span className="block text-[11px] font-normal text-slate-400">{doc.user?.email || doc.email}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-slate-800">{doc.department?.name || doc.specialization}</span>
+                      <span className="block text-[11px] text-slate-400">{doc.qualification}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span>{doc.experienceYears} Years</span>
+                      <span className="block text-[11px] text-emerald-600 font-bold">₹{doc.consultationFee}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={doc.status} />
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-2">
+                      {doc.status === 'PENDING' && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateStatus(doc.id, 'APPROVED')}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-[11px] cursor-pointer"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStatus(doc.id, 'REJECTED')}
+                            className="px-3 py-1.5 rounded-lg text-rose-600 bg-rose-50 font-semibold text-[11px] cursor-pointer"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                      {doc.status === 'APPROVED' && (
+                        <button
+                          onClick={() => handleUpdateStatus(doc.id, 'SUSPENDED')}
+                          className="px-3 py-1.5 rounded-lg text-amber-600 hover:bg-amber-50 font-semibold text-[11px] cursor-pointer"
+                        >
+                          Suspend
+                        </button>
+                      )}
+                      {doc.status === 'SUSPENDED' && (
                         <button
                           onClick={() => handleUpdateStatus(doc.id, 'APPROVED')}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-[11px]"
+                          className="px-3 py-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 font-semibold text-[11px] cursor-pointer"
                         >
-                          Approve
+                          Reinstate
                         </button>
-                        <button
-                          onClick={() => handleUpdateStatus(doc.id, 'REJECTED')}
-                          className="px-3 py-1.5 rounded-lg text-rose-600 bg-rose-50 font-semibold text-[11px]"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                    {doc.status === 'APPROVED' && (
-                      <button
-                        onClick={() => handleUpdateStatus(doc.id, 'SUSPENDED')}
-                        className="px-3 py-1.5 rounded-lg text-amber-600 hover:bg-amber-50 font-semibold text-[11px]"
-                      >
-                        Suspend
-                      </button>
-                    )}
-                    {doc.status === 'SUSPENDED' && (
-                      <button
-                        onClick={() => handleUpdateStatus(doc.id, 'APPROVED')}
-                        className="px-3 py-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 font-semibold text-[11px]"
-                      >
-                        Reinstate
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

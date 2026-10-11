@@ -1,25 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { User, Mail, Phone, MapPin, Calendar, Heart, Shield, Save, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Heart, Shield, Save, CheckCircle2, Loader2 } from 'lucide-react';
+import { patientService } from '../../services';
 
 const PatientProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: user?.name || 'Rahul Sharma',
-    email: user?.email || 'rahul.sharma@careconnect.com',
-    phone: '+91 98111 22233',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
     gender: 'Male',
-    dob: '1995-04-12',
+    dob: '',
     bloodGroup: 'O+',
-    address: 'Bhubaneswar, Odisha, India',
-    emergencyContact: '+91 98222 33344 (Father)'
+    address: '',
+    emergencyContact: ''
   });
+  const [loading, setLoading] = useState(true);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [patientId, setPatientId] = useState(null);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      try {
+        const res = await patientService.getAllPatients();
+        const list = res?.data || [];
+        const myProfile = list.find(p => p.user?.email === user?.email || p.email === user?.email);
+        if (myProfile) {
+          setPatientId(myProfile.id);
+          setProfile({
+            name: myProfile.name || user?.name || '',
+            email: myProfile.user?.email || user?.email || '',
+            phone: myProfile.phone || '',
+            gender: myProfile.gender || 'Male',
+            dob: myProfile.dob || '',
+            bloodGroup: myProfile.bloodGroup || 'O+',
+            address: myProfile.address || '',
+            emergencyContact: myProfile.emergencyContact || ''
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user?.email) fetchProfile();
+  }, [user]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 2500);
+    try {
+      if (patientId) {
+        await patientService.updateProfile(patientId, profile);
+      }
+      setSavedMsg(true);
+      setTimeout(() => setSavedMsg(false), 2500);
+    } catch (err) {
+      alert(err?.message || 'Failed to update profile');
+    }
   };
 
   return (
@@ -38,17 +77,23 @@ const PatientProfile = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-xs">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold text-xl shadow-xs">
-              {profile.name[0]}
-            </div>
-            <div>
-              <h3 className="font-bold text-base text-slate-900">{profile.name}</h3>
-              <p className="text-xs text-slate-400">CareConnect Patient ID: #CC-PT-1082</p>
-            </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+            <span className="text-xs">Loading patient profile...</span>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            <div className="flex items-center gap-4 pb-6 border-b border-slate-100">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold text-xl shadow-xs">
+                {profile.name ? profile.name[0]?.toUpperCase() : 'P'}
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-slate-900">{profile.name || 'Patient'}</h3>
+                <p className="text-xs text-slate-400">CareConnect Patient ID: #{patientId ? `CC-PT-10${patientId}` : 'CC-PT-NEW'}</p>
+              </div>
+            </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
@@ -140,6 +185,7 @@ const PatientProfile = () => {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

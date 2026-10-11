@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   Plus, 
@@ -10,36 +10,53 @@ import {
   Baby, 
   Activity, 
   Sparkles, 
-  Stethoscope 
+  Stethoscope,
+  Loader2
 } from 'lucide-react';
-import { INITIAL_DEPARTMENTS } from '../../services/mockData';
+import { departmentService, adminService } from '../../services';
 import Modal from '../../components/common/Modal';
 
 const ManageDepartments = () => {
-  const [departments, setDepartments] = useState(() => {
-    const saved = localStorage.getItem('careconnect_departments');
-    return saved ? JSON.parse(saved) : INITIAL_DEPARTMENTS;
-  });
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const handleCreate = (e) => {
+  const fetchDepartments = async () => {
+    setLoading(true);
+    try {
+      const res = await departmentService.getAllDepartments();
+      if (res?.data) {
+        setDepartments(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to load departments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const handleCreate = async (e) => {
     e.preventDefault();
     if (!name) return;
 
-    const newDept = {
-      id: Date.now(),
-      name,
-      icon: 'Building2',
-      description: description || 'Specialized department unit'
-    };
-    const updated = [...departments, newDept];
-    setDepartments(updated);
-    localStorage.setItem('careconnect_departments', JSON.stringify(updated));
-    setModalOpen(false);
-    setName('');
-    setDescription('');
+    try {
+      await adminService.createDepartment({
+        name,
+        description: description || 'Specialized clinical care unit'
+      });
+      fetchDepartments();
+      setModalOpen(false);
+      setName('');
+      setDescription('');
+    } catch (err) {
+      alert(err?.message || 'Failed to save department');
+    }
   };
 
   return (
@@ -58,21 +75,32 @@ const ManageDepartments = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {departments.map((dept) => (
-          <div key={dept.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Building2 className="w-5 h-5" />
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+          <span className="text-xs">Loading clinical departments...</span>
+        </div>
+      ) : departments.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-slate-100 p-12 text-center text-slate-400 text-xs">
+          No departments configured yet. Click "Add Department" to create one.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {departments.map((dept) => (
+            <div key={dept.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900">{dept.name}</h3>
+              <p className="text-xs text-slate-500 leading-relaxed min-h-[3rem]">{dept.description}</p>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                <span>Department ID: #{dept.id}</span>
+                <span className="text-purple-600 font-semibold">Active Wing</span>
+              </div>
             </div>
-            <h3 className="font-bold text-base text-slate-900">{dept.name}</h3>
-            <p className="text-xs text-slate-500 leading-relaxed min-h-[3rem]">{dept.description}</p>
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-              <span>Department ID: #{dept.id}</span>
-              <span className="text-purple-600 font-semibold">Active Wing</span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <Modal
         isOpen={modalOpen}
