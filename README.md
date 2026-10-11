@@ -266,6 +266,61 @@ careconnect/
 
 ---
 
+## 🔄 Dual Database Support: PostgreSQL vs. MySQL
+
+CareConnect is architected on **Spring Data JPA & Hibernate**, making it completely database-agnostic. All entities, relationships, and queries use standard JPA/JPQL.
+
+### Current Active Database:
+- **PostgreSQL (Supabase Cloud)** is pre-configured and active by default. No local database installation is needed to run the project.
+
+---
+
+### 🔀 How to Switch to MySQL (in 2 Steps):
+
+If you or your team wish to run CareConnect on **MySQL** (local or server), follow these simple steps:
+
+#### **Step 1: Switch Driver in [`backend/pom.xml`](backend/pom.xml)**
+Comment out PostgreSQL and uncomment MySQL:
+```xml
+<!-- 1. Comment out PostgreSQL -->
+<!--
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>runtime</scope>
+</dependency>
+-->
+
+<!-- 2. Uncomment MySQL -->
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+#### **Step 2: Switch Credentials in [`backend/src/main/resources/application.properties`](backend/src/main/resources/application.properties)**
+Comment out the PostgreSQL block and uncomment the MySQL block:
+```properties
+# 1. Comment out PostgreSQL properties:
+# spring.datasource.url=jdbc:postgresql://...
+# spring.datasource.username=...
+# spring.datasource.password=...
+# spring.datasource.driver-class-name=org.postgresql.Driver
+# spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# 2. Uncomment MySQL properties:
+spring.datasource.url=jdbc:mysql://localhost:3306/careconnect_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=your_mysql_password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+```
+
+Hibernate will automatically create all tables (`ddl-auto=update`) in your MySQL database on startup!
+
+---
+
 ## ⚡ Quick Start Guide
 
 ### 1. Database Setup
