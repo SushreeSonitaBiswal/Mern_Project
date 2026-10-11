@@ -3,7 +3,7 @@
 # 🏥 CareConnect
 ### *Next-Generation Hospital & Clinical Appointment Ecosystem*
 
-[![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE.md)
 [![Java 17](https://img.shields.io/badge/Java-17%2F21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -303,7 +303,7 @@ npm run dev
 
 ## 📜 License
 
-Distributed under the **MIT License**. See the [`LICENSE`](./LICENSE) file for complete details.
+Distributed under the **MIT License**. See the [`LICENSE.md`](./LICENSE.md) file for complete details.
 
 <div align="center">
   <sub>Built with ❤️ for Modern Healthcare Engineering</sub>
