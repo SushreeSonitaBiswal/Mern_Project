@@ -1,186 +1,310 @@
-# 🏥 CareConnect — Hospital & Appointment Management System
+<div align="center">
 
-> **A Modern Full-Stack Enterprise Healthcare Platform** built with **Spring Boot (Java 17/21)**, **React.js (JSX)**, **Tailwind CSS**, **Spring Data JPA / Hibernate**, and **MySQL**.
+# 🏥 CareConnect
+### *Next-Generation Hospital & Clinical Appointment Ecosystem*
 
----
+[![MIT License](https://img.shields.io/badge/License-MIT-emerald.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![Java 17](https://img.shields.io/badge/Java-17%2F21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![JWT](https://img.shields.io/badge/JWT-Stateless_Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 
-## 📖 Table of Contents
+<br />
 
-- [Overview](#-overview)
-- [Key Features & User Roles](#-key-features--user-roles)
-- [System Architecture](#-system-architecture)
-- [Technology Stack](#-technology-stack)
-- [Database Design](#-database-design)
-- [Directory Structure](#-directory-structure)
-- [API Overview](#-api-overview)
-- [Roadmap & Detailed Plan](#-roadmap--detailed-plan)
-- [Getting Started](#-getting-started)
-- [Default Credentials](#-default-credentials)
+**A state-of-the-art healthcare web platform connecting Patients, Doctors, and Administrators with real-time consultation scheduling, electronic prescriptions, and clinical governance.**
 
----
+<br />
 
-## 🌟 Overview
+[Explore Master Architecture Plan ➔](./plan.md) · [Report Bug](https://github.com/SushreeSonitaBiswal/Mern_Project/issues) · [Request Feature](https://github.com/SushreeSonitaBiswal/Mern_Project/issues)
 
-**CareConnect** is a comprehensive, production-ready hospital and clinical appointment management system. It bridges the gap between healthcare providers and patients by streamlining:
-- Real-time doctor search and intelligent slot scheduling.
-- Complete consultation lifecycle management (Requested ➔ Confirmed ➔ Completed / Cancelled).
-- Digital prescription generation and consultation history.
-- Verified doctor onboarding, hospital KPI analytics, and administrative auditing.
+</div>
 
 ---
 
-## 👥 Key Features & User Roles
+## 🧭 Table of Contents
+
+- [✨ Key Highlights](#-key-highlights)
+- [👥 Role-Based Experience](#-role-based-experience)
+  - [👤 Patient Experience](#-patient-experience)
+  - [👨‍⚕️ Doctor Consultation Suite](#️-doctor-consultation-suite)
+  - [👨‍💼 Administrative Command Center](#-administrative-command-center)
+- [🏛️ System Architecture](#️-system-architecture)
+- [💻 Tech Stack Breakdown](#-tech-stack-breakdown)
+- [📊 Database Architecture & ERD](#-database-architecture--erd)
+- [📂 Clean Project Hierarchy](#-clean-project-hierarchy)
+- [🔌 REST API Matrix](#-rest-api-matrix)
+- [⚡ Quick Start Guide](#-quick-start-guide)
+- [🔑 Seed Accounts & Credentials](#-seed-accounts--credentials)
+- [📜 License](#-license)
+
+---
+
+## ✨ Key Highlights
+
+- ⏱️ **Intelligent Slot Engine**: Dynamically calculates open 30-minute consultation windows based on weekly schedules, breaks, and booked slots.
+- 🔐 **Zero-Trust Security**: Spring Security 6 with stateless JWT Bearer token authentication and strict role-based access control (`ROLE_PATIENT`, `ROLE_DOCTOR`, `ROLE_ADMIN`).
+- 💊 **Digital Prescription Studio**: Structured prescription creator with medicine dosages, intake frequencies, durations, and clinical notes.
+- 📈 **Hospital Analytics Board**: Live metrics tracking consultation volumes, verified staff, and active patients.
+- 🎨 **Modern Aesthetic Interface**: Designed with Tailwind CSS featuring harmonious medical palettes (Emerald, Cyan, Indigo, Slate), responsive card layouts, and micro-interactions.
+
+---
+
+## 👥 Role-Based Experience
+
+<table>
+<tr>
+<td width="33%" valign="top">
 
 ### 👤 Patient Portal
-- **Authentication**: Secure JWT-based self-registration and profile management.
-- **Find Doctors**: Search & filter by department/specialization, years of experience, consultation fee, and patient ratings.
-- **Smart Appointment Booking**: Dynamic slot picker (30-min intervals) reflecting real-time doctor availability.
-- **Appointment Management**: Track status, view upcoming appointments, or cancel existing bookings.
-- **Medical Records**: View and download digital prescriptions and consultation diagnosis.
-- **Doctor Reviews**: Leave 1-5 star ratings and reviews for completed consultations.
+* 🔍 **Smart Doctor Discovery**: Filter by department, experience, rating, and fee.
+* 📅 **Live Slot Picker**: Book 30-min slots with instant collision checks.
+* 📋 **Appointment Timeline**: Monitor bookings from *Requested* to *Completed*.
+* 💊 **Prescription Vault**: Review and download doctor advice anytime.
+* ⭐ **Doctor Ratings**: Leave feedback and 5-star ratings for care received.
+
+</td>
+<td width="33%" valign="top">
 
 ### 👨‍⚕️ Doctor Portal
-- **Consultation Dashboard**: Daily schedule overview, upcoming patient queue, and consultation stats.
-- **Availability Scheduler**: Define weekly working hours, working days, and slot durations.
-- **Appointment Workflow**: Accept, decline, or complete patient consultations.
-- **Digital Prescription Composer**: Prescribe medicines with dosage, frequency, duration, and diagnosis advice.
-- **Patient History**: Access past consultation history and medical notes for booked patients.
+* 🗓️ **Custom Availability**: Setup working days, consultation hours, and breaks.
+* 📥 **Consultation Queue**: Review requests, confirm slots, or reject with reason.
+* 🩺 **Consultation Studio**: Inspect patient medical details and symptoms.
+* ✍️ **Rx Prescription Composer**: Multi-row medication writer with auto dosages.
+* 📊 **Performance Insights**: Track completed consultations and patient feedback.
 
-### 👨‍💼 Admin Command Center
-- **Executive Analytics**: Real-time KPI counters (total patients, verified doctors, appointments, revenue).
-- **Doctor Verification**: Review pending doctor profiles, credentials, and approve/suspend access.
-- **Hospital Management**: Add and manage hospital medical departments.
-- **Global Appointment Audit**: Full visibility over all appointments with search, filter, and status overrides.
+</td>
+<td width="33%" valign="top">
+
+### 👨‍💼 Admin Console
+* 📊 **Executive Overview**: Total patients, verified doctors, and active appointments.
+* 🛡️ **Doctor Verification**: Review credentials and approve or suspend practitioners.
+* 🏥 **Department Registry**: Create and manage hospital departments.
+* 🔎 **Global Audit Ledger**: Search, filter, and inspect every appointment system-wide.
+* ⚙️ **Platform Controls**: System settings and security policy audits.
+
+</td>
+</tr>
+</table>
 
 ---
 
-## 🏗️ System Architecture
+## 🏛️ System Architecture
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    REACT FRONTEND (.jsx)                   │
-│        Tailwind CSS + React Router v6 + Axios Interceptors  │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ JSON / REST API (JWT Bearer)
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                SPRING BOOT BACKEND (Java 17/21)             │
-│  Security / JWT Filter ──► Controllers ──► Services         │
-│                                └──► Repositories (JPA)      │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ Hibernate / JDBC Pool (Hikari)
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       MySQL DATABASE                        │
-│          Users, Patients, Doctors, Appointments, etc.       │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Client ["Client Layer (React.js + Tailwind CSS)"]
+        UI["Modern Responsive UI (.jsx)"]
+        State["Auth Context & Route Guards"]
+        Axios["Axios Interceptors (Bearer JWT)"]
+        UI --> State --> Axios
+    end
+
+    subgraph Gateway ["Spring Boot Backend (Java 17/21)"]
+        Sec["Spring Security 6 (Stateless JWT)"]
+        Ctrl["REST Controllers"]
+        Serv["Business Service Layer"]
+        SlotEng["Dynamic Slot Engine"]
+        Repo["Spring Data JPA Repositories"]
+
+        Axios -->|HTTPS / JSON| Sec
+        Sec --> Ctrl
+        Ctrl --> Serv
+        Serv --> SlotEng
+        Serv --> Repo
+    end
+
+    subgraph Data ["Data Persistence Layer"]
+        MySQL[("MySQL 8.0 Database")]
+        Repo -->|Hibernate ORM / HikariCP| MySQL
+    end
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## 💻 Tech Stack Breakdown
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React.js (`.jsx`), Tailwind CSS, React Router v6, Axios, Lucide Icons |
-| **Backend** | Java 17 / 21, Spring Boot, Spring Security (Stateless JWT), Spring Data JPA |
-| **ORM / Persistence** | Hibernate, HikariCP Connection Pooling |
-| **Database** | MySQL 8.0+ |
-| **Build & Tooling** | Maven, Vite / npm, Git |
+<div align="center">
+
+| Technology | Purpose | Documentation |
+| :--- | :--- | :--- |
+| **Java 17 / 21** | Modern, performant backend programming runtime | [Java Docs](https://dev.java/) |
+| **Spring Boot 3** | Enterprise REST micro-framework & Dependency Injection | [Spring Boot](https://spring.io/projects/spring-boot) |
+| **Spring Security & JWT** | Role-based authorization & stateless tokens | [Spring Security](https://spring.io/projects/spring-security) |
+| **Hibernate & JPA** | Object-Relational Mapping & query optimization | [Hibernate](https://hibernate.org/) |
+| **MySQL 8.0** | ACID-compliant relational persistence store | [MySQL](https://www.mysql.com/) |
+| **React 18** | High-performance interactive UI component tree (`.jsx`) | [React](https://react.dev/) |
+| **Tailwind CSS** | Premium utility-first styling with modern glassmorphism | [Tailwind](https://tailwindcss.com/) |
+| **Axios** | Promised-based HTTP client with request/response interceptors | [Axios](https://axios-http.com/) |
+
+</div>
 
 ---
 
-## 🗄️ Database Design
+## 📊 Database Architecture & ERD
 
-```text
-User (id, email, password, role)
- ├── Patient (user_id, name, phone, gender, blood_group, address)
- └── Doctor (user_id, department_id, name, phone, specialization, fee, status)
-      │
-      ├── DoctorAvailability (doctor_id, day_of_week, start_time, end_time, slot_duration)
-      └── Appointments (patient_id, doctor_id, date, time, status, symptoms)
-           │
-           ├── Prescription (appointment_id, diagnosis, advice)
-           │    └── PrescriptionItems (medicine, dosage, frequency, duration)
-           └── Reviews (appointment_id, rating, comment)
+```mermaid
+erDiagram
+    USERS ||--|| PATIENTS : "has profile"
+    USERS ||--|| DOCTORS : "has profile"
+    DEPARTMENTS ||--o{ DOCTORS : "belongs to"
+    DOCTORS ||--o{ DOCTOR_AVAILABILITY : "configures"
+    DOCTORS ||--o{ APPOINTMENTS : "conducts"
+    PATIENTS ||--o{ APPOINTMENTS : "books"
+    APPOINTMENTS ||--o| PRESCRIPTIONS : "generates"
+    PRESCRIPTIONS ||--o{ PRESCRIPTION_ITEMS : "contains"
+    APPOINTMENTS ||--o| REVIEWS : "evaluated by"
+
+    USERS {
+        bigint id PK
+        string email UK
+        string password
+        string role
+        boolean enabled
+    }
+
+    DOCTORS {
+        bigint id PK
+        bigint user_id FK
+        bigint department_id FK
+        string name
+        string specialization
+        decimal consultation_fee
+        string status
+    }
+
+    APPOINTMENTS {
+        bigint id PK
+        bigint patient_id FK
+        bigint doctor_id FK
+        date appointment_date
+        time appointment_time
+        string status
+        text symptoms
+    }
+
+    PRESCRIPTIONS {
+        bigint id PK
+        bigint appointment_id FK
+        text diagnosis
+        text advice
+    }
 ```
 
 ---
 
-## 📁 Directory Structure
+## 📂 Clean Project Hierarchy
 
 ```text
 careconnect/
-├── README.md                  # Project documentation & overview
-├── plan.md                    # In-depth architectural master plan
+├── README.md                      # 📖 Modern project presentation
+├── plan.md                        # 📐 Comprehensive 8-phase master plan
+├── LICENSE                        # ⚖️ MIT open source license
 │
-├── careconnect-backend/       # Spring Boot Application
+├── careconnect-backend/           # ☕ Spring Boot Application
+│   ├── pom.xml
 │   └── src/main/java/com/careconnect/
-│       ├── controller/        # REST Endpoints
-│       ├── service/           # Business logic & slot generation algorithms
-│       ├── repository/        # Spring Data JPA interfaces
-│       ├── entity/            # JPA Domain models
-│       ├── dto/               # Request & Response payloads
-│       ├── security/          # JWT Filters & Spring Security config
-│       └── exception/         # Global Exception Handlers
+│       ├── controller/            # REST API Controllers (Auth, Doctor, Patient, etc.)
+│       ├── service/               # Domain Business Logic & Slot Algorithms
+│       ├── repository/            # Spring Data JPA Repository Layer
+│       ├── entity/                # Relational JPA Data Entities
+│       ├── dto/                   # Request / Response Transfer Objects
+│       ├── security/              # JWT Filters, UserDetailsService & Config
+│       └── exception/             # Centralized RestControllerAdvice Handlers
 │
-└── careconnect-frontend/      # React Application (.jsx)
+└── careconnect-frontend/          # ⚛️ React.js + Tailwind CSS (.jsx)
+    ├── package.json
+    ├── tailwind.config.js
     └── src/
-        ├── components/        # Reusable UI & domain components
-        ├── pages/             # Public, Patient, Doctor & Admin pages
-        ├── context/           # AuthContext & State management
-        ├── services/          # Axios API clients
-        └── routes/            # React Router protected routing
+        ├── components/            # Atomic Reusable Components (Modals, Badges, Pickers)
+        ├── pages/                 # Public, Patient, Doctor, and Admin views
+        ├── context/               # AuthContext & Global Session State
+        ├── services/              # Clean API Client Modules
+        └── routes/                # Protected Routes & RBAC Guards
 ```
 
 ---
 
-## 🔌 API Overview
+## 🔌 REST API Matrix
 
-### 🔑 Authentication
-- `POST /api/auth/register` — Register new patient account
-- `POST /api/auth/login` — Login & receive JWT authentication token
-- `GET /api/auth/me` — Retrieve authenticated user profile
+### 🔐 Authentication & Session
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Register new patient account |
+| `POST` | `/api/auth/login` | Public | Authenticate user & get JWT token |
+| `GET` | `/api/auth/me` | Authenticated | Fetch current user session details |
 
-### 👨‍⚕️ Doctors & Slots
-- `GET /api/doctors` — Public search with pagination & filters
-- `GET /api/doctors/{id}` — Doctor details & reviews
-- `GET /api/doctors/{id}/slots?date=YYYY-MM-DD` — Computed available booking slots
-- `POST /api/doctor/availability` — Doctor schedule configuration
+### 🩺 Doctors & Scheduling
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/doctors` | Public | Paginated doctor search with filter query |
+| `GET` | `/api/doctors/{id}` | Public | Detailed doctor portfolio & reviews |
+| `GET` | `/api/doctors/{id}/slots` | Public | Calculate real-time available slots for date |
+| `POST` | `/api/doctor/availability` | Doctor | Update weekly consultation time windows |
 
-### 📅 Appointments
-- `POST /api/patient/appointments` — Book new appointment slot
-- `GET /api/patient/appointments` — Patient appointment history
-- `PATCH /api/doctor/appointments/{id}/status` — Accept / Complete appointment
-- `PATCH /api/patient/appointments/{id}/cancel` — Cancel appointment
+### 📅 Appointments & Consultations
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/patient/appointments` | Patient | Reserve time slot & submit symptoms |
+| `GET` | `/api/patient/appointments` | Patient | List patient's appointment records |
+| `PATCH` | `/api/patient/appointments/{id}/cancel` | Patient | Cancel pending appointment |
+| `PATCH` | `/api/doctor/appointments/{id}/status` | Doctor | Transition status (`CONFIRMED`, `COMPLETED`, `REJECTED`) |
 
-### 💊 Prescriptions & Reviews
-- `POST /api/prescriptions` — Create medical prescription & medicines
-- `GET /api/prescriptions/{appointmentId}` — Retrieve consultation prescription
-- `POST /api/patient/reviews` — Rate doctor consultation
+### 💊 Prescriptions & Feedback
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/prescriptions` | Doctor | Generate consultation diagnosis & medicines |
+| `GET` | `/api/prescriptions/{appointmentId}` | Patient/Doctor | Read structured consultation prescription |
+| `POST` | `/api/patient/reviews` | Patient | Submit rating and feedback for completed visit |
 
-### 🛡️ Admin
-- `GET /api/admin/stats` — High-level hospital statistics
-- `PATCH /api/admin/doctors/{id}/status` — Approve or reject doctor profile
-
----
-
-## 📋 Roadmap & Detailed Plan
-
-For the exhaustive step-by-step breakdown, component blueprints, DTOs, and full system specifications, refer to [**`plan.md`**](./plan.md).
-
----
-
-## 🔐 Default Credentials
-
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin** | `admin@careconnect.com` | `Admin@123` |
-| **Doctor** | `raj.kumar@careconnect.com` | `Doctor@123` |
-| **Patient** | `rahul.sharma@careconnect.com` | `Patient@123` |
+### 🛡️ Administration
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/admin/stats` | Admin | Aggregate hospital metrics & counters |
+| `PATCH` | `/api/admin/doctors/{id}/status` | Admin | Approve, reject, or suspend doctor credentials |
 
 ---
 
-## 📄 License
+## ⚡ Quick Start Guide
 
-This project is licensed under the MIT License.
+### 1. Database Setup
+```sql
+CREATE DATABASE careconnect_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 2. Backend Initialization
+```bash
+cd careconnect-backend
+# Update src/main/resources/application.properties with your MySQL credentials
+mvn clean spring-boot:run
+```
+> The API server will be live at `http://localhost:8080`.
+
+### 3. Frontend Initialization
+```bash
+cd careconnect-frontend
+npm install
+npm run dev
+```
+> The React client will be accessible at `http://localhost:5173`.
+
+---
+
+## 🔑 Seed Accounts & Credentials
+
+| Role | Email Address | Password | Permissions |
+| :--- | :--- | :--- | :--- |
+| 👑 **System Admin** | `admin@careconnect.com` | `Admin@123` | Full administrative control |
+| 👨‍⚕️ **Senior Cardiologist** | `raj.kumar@careconnect.com` | `Doctor@123` | Doctor consultation & schedule |
+| 👤 **Patient User** | `rahul.sharma@careconnect.com` | `Patient@123` | Slot booking & medical profile |
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See the [`LICENSE`](./LICENSE) file for complete details.
+
+<div align="center">
+  <sub>Built with ❤️ for Modern Healthcare Engineering</sub>
+</div>
