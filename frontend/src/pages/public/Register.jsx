@@ -40,9 +40,11 @@ const Register = () => {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
       <div className="max-w-xl w-full space-y-8 bg-white p-6 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-            <Activity className="w-6 h-6" />
-          </div>
+          <img
+            src="/logo.svg"
+            alt="CareConnect Logo"
+            className="mx-auto w-14 h-14 drop-shadow-md hover:scale-105 transition-transform"
+          />
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Create Patient Account</h2>
           <p className="mt-2 text-sm text-slate-500">Sign up to consult doctors, track bookings, and manage medical prescriptions</p>
         </div>

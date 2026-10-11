@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="careGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="50%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#0D9488" />
+    </linearGradient>
+    
+    <!-- Heart Glow Gradient -->
+    <linearGradient id="crossGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#ECFDF5" />
+    </linearGradient>
+
+    <!-- Shadow filter for depth -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#059669" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base Container with Shadow -->
+  <rect x="36" y="36" width="440" height="440" rx="110" fill="url(#careGradient)" filter="url(#softShadow)" />
+
+  <!-- Inner Soft Ring -->
+  <rect x="42" y="42" width="428" height="428" rx="104" stroke="#FFFFFF" stroke-width="6" stroke-opacity="0.2" fill="none" />
+
+  <!-- Clinical Medical Plus / Heart Hybrid Cross -->
+  <!-- Vertical Bar with rounded ends -->
+  <rect x="226" y="146" width="60" height="220" rx="30" fill="url(#crossGradient)" />
+  
+  <!-- Horizontal Bar with rounded ends -->
+  <rect x="146" y="226" width="220" height="60" rx="30" fill="url(#crossGradient)" />
+
+  <!-- Heartbeat ECG Pulse Line across the medical emblem -->
+  <path d="M110 256 H195 L220 190 L256 330 L292 220 L317 256 H402" 
+        stroke="#059669" 
+        stroke-width="14" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" />
+
+  <!-- Heart Rhythm Accent Dot -->
+  <circle cx="256" cy="330" r="10" fill="#047857" />
+</svg>

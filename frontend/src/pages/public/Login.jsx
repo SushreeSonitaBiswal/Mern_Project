@@ -42,9 +42,11 @@ const Login = () => {
         
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
-            <Activity className="w-6 h-6" />
-          </div>
+          <img
+            src="/logo.svg"
+            alt="CareConnect Logo"
+            className="mx-auto w-14 h-14 drop-shadow-md hover:scale-105 transition-transform"
+          />
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">Sign in to CareConnect</h2>
           <p className="mt-1 text-xs text-slate-500">Access role-specific healthcare management workspaces</p>
         </div>

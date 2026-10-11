@@ -46,10 +46,12 @@ const Navbar = () => {
           
           {/* Logo */}
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <Activity className="w-5 h-5" />
-              </div>
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <img 
+                src="/logo.svg" 
+                alt="CareConnect Logo" 
+                className="w-10 h-10 drop-shadow-sm group-hover:scale-105 transition-transform" 
+              />
               <div className="flex flex-col">
                 <span className="font-bold text-xl tracking-tight text-slate-800 leading-none">
                   Care<span className="text-emerald-600">Connect</span>
