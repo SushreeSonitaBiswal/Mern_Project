@@ -1,0 +1,59 @@
+<div align="center">
+
+# ⚖️ MIT Open Source License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-10B981.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
+[![Copyright](https://img.shields.io/badge/Copyright-2026_CareConnect-3B82F6.svg?style=for-the-badge&logo=github&logoColor=white)](#)
+[![Status](https://img.shields.io/badge/Status-Active_&_Permissive-8B5CF6.svg?style=for-the-badge)](#)
+
+<br />
+
+### 🏥 **CareConnect — Hospital & Appointment Management System**
+
+</div>
+
+---
+
+### 🟢 Permissions granted by this license:
+- 🟢 **Commercial Use** — Use this project commercially in private or public enterprises.
+- 🟢 **Modification** — Alter, modify, and build upon any part of the codebase.
+- 🟢 **Distribution** — Distribute copies of the original or modified source code.
+- 🟢 **Private Use** — Freely use and modify without having to publish source code.
+
+### 🔴 Limitations & Conditions:
+- ℹ️ **License and copyright notice** must be included in all copies or substantial portions.
+- ⚠️ **No Liability** — The software is provided "as is", without warranty of any kind.
+
+---
+
+### 📜 Legal License Text
+
+```text
+MIT License
+
+Copyright (c) 2026 CareConnect Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+<div align="center">
+  <sub>⚖️ Protected under the globally recognized Open Source Initiative (OSI) standard.</sub>
+</div>
