@@ -321,28 +321,38 @@ Hibernate will automatically create all tables (`ddl-auto=update`) in your MySQL
 
 ---
 
-## ⚡ Quick Start Guide
+## ⚡ Quick Start Guide (Dual Mode)
 
-### 1. Database Setup
-```sql
-CREATE DATABASE careconnect_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+You can run both **Frontend** and **Backend** simultaneously from the root directory with a single command, or run them independently!
 
-### 2. Backend Initialization
+### 🚀 1. Run Both Simultaneously (Root Command)
+From the root folder (`d:\Projects\TGS_MERN`), simply run:
 ```bash
-cd backend
-# Update src/main/resources/application.properties with your MySQL credentials
-./mvnw clean spring-boot:run
-```
-> The API server will be live at `http://localhost:8080`.
-
-### 3. Frontend Initialization
-```bash
-cd frontend
-npm install
 npm run dev
 ```
-> The React client will be accessible at `http://localhost:5173`.
+*(Or double-click `run.bat` on Windows)*
+
+This uses `concurrently` with color-coded live logs:
+- 🔵 **[BACKEND]**: Starts Spring Boot via embedded `./mvnw` at `http://localhost:8080`
+- 🟢 **[FRONTEND]**: Starts React + Vite at `http://localhost:5173`
+
+---
+
+### 🛠️ 2. Run Individually (If needed)
+
+#### Run Backend Only:
+```bash
+npm run backend
+# OR
+cd backend && ./mvnw spring-boot:run
+```
+
+#### Run Frontend Only:
+```bash
+npm run frontend
+# OR
+cd frontend && npm run dev
+```
 
 ---
 
