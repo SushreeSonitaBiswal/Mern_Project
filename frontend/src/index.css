@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Global Scrollbar Removal: Hide scrollbars across all browsers and elements
+   while preserving smooth scrolling functionality.
+   ========================================================================== */
+*,
+*::before,
+*::after,
+html,
+body {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+/* Chrome, Safari, Opera, Edge (WebKit) */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+}
+
 body {
   background-color: rgb(248 250 252);
   color: rgb(15 23 42);
