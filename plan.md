@@ -133,7 +133,7 @@
 ```text
 careconnect/
 ├── plan.md
-├── careconnect-backend/
+├── backend/
 │   ├── pom.xml
 │   └── src/
 │       ├── main/
@@ -218,7 +218,7 @@ careconnect/
 │       │       ├── application.properties
 │       │       └── data.sql (Initial mock seed data)
 │
-└── careconnect-frontend/
+└── frontend/
     ├── package.json
     ├── tailwind.config.js
     ├── postcss.config.js

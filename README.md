@@ -200,9 +200,9 @@ erDiagram
 careconnect/
 ├── README.md                      # 📖 Modern project presentation
 ├── plan.md                        # 📐 Comprehensive 8-phase master plan
-├── LICENSE                        # ⚖️ MIT open source license
+├── LICENSE.md                     # ⚖️ MIT open source license
 │
-├── careconnect-backend/           # ☕ Spring Boot Application
+├── backend/                       # ☕ Spring Boot Application
 │   ├── pom.xml
 │   └── src/main/java/com/careconnect/
 │       ├── controller/            # REST API Controllers (Auth, Doctor, Patient, etc.)
@@ -213,7 +213,7 @@ careconnect/
 │       ├── security/              # JWT Filters, UserDetailsService & Config
 │       └── exception/             # Centralized RestControllerAdvice Handlers
 │
-└── careconnect-frontend/          # ⚛️ React.js + Tailwind CSS (.jsx)
+└── frontend/                      # ⚛️ React.js + Tailwind CSS (.jsx)
     ├── package.json
     ├── tailwind.config.js
     └── src/
@@ -275,15 +275,15 @@ CREATE DATABASE careconnect_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ### 2. Backend Initialization
 ```bash
-cd careconnect-backend
+cd backend
 # Update src/main/resources/application.properties with your MySQL credentials
-mvn clean spring-boot:run
+./mvnw clean spring-boot:run
 ```
 > The API server will be live at `http://localhost:8080`.
 
 ### 3. Frontend Initialization
 ```bash
-cd careconnect-frontend
+cd frontend
 npm install
 npm run dev
 ```
